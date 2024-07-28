@@ -1,0 +1,12 @@
+.vscode
+logs
+md
+output
+reference
+resources
+target
+virtual
+*.txt
+*.conf
+*.json
+__pycache__
