@@ -1,11 +1,11 @@
-from .tweet import Tweet
+from .tweet_downloader import AbstractTweetDownloader
 from .parse import *
 import sys
 from . import logger
 from configs.config import headers
 from tool.tool import get_formatted_json_str
 
-class FavoriteTweet(Tweet):
+class FavoriteTweetDownloader(AbstractTweetDownloader):
     def __init__(self, headers):
         super().__init__(headers)
         
@@ -16,12 +16,9 @@ class FavoriteTweet(Tweet):
         return (url_prefix, url_suffix)
 
 
-    def get_entry_info_list(self, entries: list) -> list:
+    def parse_response_info(self, data: dict) -> dict:
+        entries = get_entries_from_favorite_response(data)
         return get_entry_info_list_from_entries(entries)
-
-
-    def get_entries(self, twitter_result: dict) -> list:
-        return get_entries_from_favorite_response(twitter_result)
     
 
 if __name__ == "__main__":
@@ -29,6 +26,6 @@ if __name__ == "__main__":
         logger.error("Please input rest id of the user")
         exit(-1)
     rest_id = sys.argv[1]
-    tweet = FavoriteTweet(headers)
-    twitter_info = tweet.get_all_info(rest_id)
+    tweet = FavoriteTweetDownloader(headers)
+    twitter_info = tweet.get_info(rest_id)
     print(get_formatted_json_str(twitter_info))

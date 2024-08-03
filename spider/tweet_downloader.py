@@ -1,14 +1,11 @@
 from . import logger
 from tool.decorators import LoggerWrapper
-import requests
 from abc import abstractmethod
+from .commom_downloader import AbstractDownloader
 
-class Tweet:
-    def __init__(self, headers):
-        self.headers = headers
-        
+class AbstractTweetDownloader(AbstractDownloader): 
     @LoggerWrapper(logger)
-    def get_all_info(self, rest_id: str) -> list:
+    def get_info(self, rest_id: str) -> list:
         """获取一个用户所有twitter信息
 
         Args:
@@ -24,9 +21,10 @@ class Tweet:
             while next_url != None:
                 logger.info("Round :{}".format(counter))
                 counter += 1
-                entry_info = self.get_info_by_url(next_url)
-                next_url = self.get_next_url(rest_id, entry_info)
-                current_entry_info = entry_info[:-2]
+                response_json = self.get_response_json_by_url(next_url)
+                response_info = self.parse_response_info(response_json)
+                next_url = self.get_next_url(rest_id, response_info)
+                current_entry_info = self.get_valid_response_info(response_info)
                 all_entry_info += current_entry_info
                 # 打印本页所有信息数量
                 logger.info("The count of current round is {}, all count is {}".format(len(current_entry_info), len(all_entry_info)))
@@ -69,27 +67,6 @@ class Tweet:
         return "".join(self.get_url_prefix_suffix(rest_id))
 
 
-    @LoggerWrapper(logger)
-    def get_info_by_url(self, url: str) -> dict:
-        """通过url获取tw信息
-
-        Args:
-            url (str): url
-
-        Returns:
-            list: tw信息列表
-        """
-        try:
-            result = requests.get(url, headers = self.headers)
-            twitter_result = result.json()
-            entries = self.get_entries(twitter_result)
-            entry_info_list = self.get_entry_info_list(entries)
-            return entry_info_list
-        except Exception as ex:
-            logger.exception(ex)
-            return []
-
-
     @abstractmethod
     def get_url_prefix_suffix(self, rest_id: str) -> tuple:
         """获取url的前后缀
@@ -101,30 +78,30 @@ class Tweet:
             tuple: (url前缀, url后缀)
         """
         pass
-
-
-    @abstractmethod
-    def get_entry_info_list(self, entries: list) -> list:
-        """将entries转为entry_info_list
-
-        Args:
-            entries (list): entries
-
-        Returns:
-            list: entry_info_list
-        """
-        pass
-
+    
 
     @abstractmethod
-    def get_entries(self, twitter_result: dict) -> list:
-        """从response中获取所有entries
+    def parse_response_info(self, data: dict) -> dict:
+        """解析response
 
         Args:
-            twitter_result (dict): response
+            data (dict): response
 
         Returns:
-            list: entry列表
+            dict: 解析后的结果
         """
         pass
+    
+
+
+    def get_valid_response_info(self, response_info: dict) -> dict:
+        """获取有效的信息
+
+        Args:
+            response_info (dict): response的解析结果
+
+        Returns:
+            dict: 有效结果
+        """
+        return response_info[:-2]
         

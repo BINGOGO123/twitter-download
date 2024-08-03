@@ -5,4 +5,6 @@ from tool.tool import initialLogger
 module_name = __name__
 logger = logging.getLogger(module_name)
 
-initialLogger(logger, module_name, **base_config[module_name].get("logs"))
+module_config = base_config.get(module_name)
+
+initialLogger(logger, module_name, **module_config.get("logs"))

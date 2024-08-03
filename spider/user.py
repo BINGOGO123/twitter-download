@@ -1,29 +1,22 @@
 import sys
-import requests
 from configs.config import headers
 from . import logger
-from tool.decorators import LoggerWrapper
 from tool.tool import get_formatted_json_str
 from .parse import get_user_info_from_user_response
+from .single_downloader import AbstractSinglePageDownloader
+from .err import *
 
-@LoggerWrapper(logger)
-def get_user_info(screen_name: str) -> dict:
-    """根据用户的screen_name查询用户信息
 
-    Args:
-        screen_name (str): 用户的唯一标识ID
-
-    Returns:
-        dict: 用户信息，包含name,screen_name,rest_id三个字段
-    """
-    try:
-        url = 'https://x.com/i/api/graphql/-0XdHI-mrHWBQd8-oLo1aA/ProfileSpotlightsQuery?variables={"screen_name":"' + screen_name + '"}'
-        result = requests.get(url, headers = headers)
-        user_info_response = result.json()
-        return get_user_info_from_user_response(user_info_response)
-    except Exception as ex:
-        logger.exception(ex)
-        return {}
+class UserInfoDownloader(AbstractSinglePageDownloader):
+    def get_url(self, *args):
+        if len(args) == 0:
+            raise ArgsException("At least one arg required")
+        if not isinstance(args[0], str):
+            raise ArgsException("The first arg must be str")
+        return 'https://x.com/i/api/graphql/-0XdHI-mrHWBQd8-oLo1aA/ProfileSpotlightsQuery?variables={"screen_name":"' + args[0] + '"}'
+    
+    def parse_response_info(self, data: dict) -> dict:
+        return get_user_info_from_user_response(data)
 
 
 if __name__ == "__main__":
@@ -31,5 +24,6 @@ if __name__ == "__main__":
         logger.error("Please input screen_name of the user")
         exit(-1)
     screen_name = sys.argv[1]
-    user_info = get_user_info(screen_name)
+    downloader = UserInfoDownloader(headers)
+    user_info = downloader.get_info(screen_name)
     print(get_formatted_json_str(user_info))
