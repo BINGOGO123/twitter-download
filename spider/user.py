@@ -25,6 +25,7 @@ def get_user_info(screen_name: str) -> dict:
         logger.exception(ex)
         return {}
 
+
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
         logger.error("Please input screen_name of the user")
