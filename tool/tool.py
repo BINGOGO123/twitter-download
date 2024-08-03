@@ -2,6 +2,7 @@ import copy
 import os
 import logging
 import datetime
+import json
 
 def cover(o1: dict, o2: dict) -> None:
   """
@@ -47,3 +48,15 @@ def initialLogger(logger: logging.Logger, name:str, logs_dir: str, logger_level:
   logger.setLevel(eval(logger_level))
   logger.addHandler(handler1)
   logger.addHandler(handler2)
+  
+  
+def get_formatted_json_str(json_info) -> str:
+  """获取格式化好的json转的str
+
+  Args:
+      json_info (any): json对象
+
+  Returns:
+      str: 格式化结果
+  """
+  return json.dumps(json_info, sort_keys=True, indent=4, separators=(', ', ': '), ensure_ascii=False)
