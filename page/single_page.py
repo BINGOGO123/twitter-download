@@ -1,16 +1,16 @@
-from .commom_downloader import AbstractDownloader
+from .common_page import AbstractPage
 from tool.decorators import LoggerWrapper
 from . import logger
 from abc import abstractmethod
 
-class AbstractSinglePageDownloader(AbstractDownloader):
+class AbstractSinglePage(AbstractPage):
     @LoggerWrapper(logger)
     def get_info(self, *args) -> dict:
         try:
             # 根据参数生成url
             url = self.get_url(*args)
             # 通过url获取json内容
-            data = self.get_response_json_by_url(url)
+            data = self.downloader.get_tw_response_json_by_url(url)
             # 解析json内容
             result = self.parse_response_info(data)
             return result

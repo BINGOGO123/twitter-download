@@ -1,13 +1,12 @@
 from . import logger
-from configs.config import headers
 from .parse import *
 import sys
 from tool.tool import get_formatted_json_str
-from .single_downloader import AbstractSinglePageDownloader
-from .err import *
+from .single_page import AbstractSinglePage
+from err.err import *
 
 
-class TwitterInfoDownloader(AbstractSinglePageDownloader):
+class TwitterInfoPage(AbstractSinglePage):
     def get_url(self, *args):
         if len(args) == 0:
             raise ArgsException("At least one arg required")
@@ -26,6 +25,6 @@ if __name__ == "__main__":
         logger.error("Please input twitter id")
         exit(-1)
     twitter_id = sys.argv[1]
-    downloader = TwitterInfoDownloader(headers)
+    downloader = TwitterInfoPage()
     twitter_info = downloader.get_info(twitter_id)
     print(get_formatted_json_str(twitter_info))

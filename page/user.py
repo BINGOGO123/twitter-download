@@ -1,13 +1,12 @@
 import sys
-from configs.config import headers
 from . import logger
 from tool.tool import get_formatted_json_str
 from .parse import get_user_info_from_user_response
-from .single_downloader import AbstractSinglePageDownloader
-from .err import *
+from .single_page import AbstractSinglePage
+from err.err import *
 
 
-class UserInfoDownloader(AbstractSinglePageDownloader):
+class UserInfoPage(AbstractSinglePage):
     def get_url(self, *args):
         if len(args) == 0:
             raise ArgsException("At least one arg required")
@@ -24,6 +23,6 @@ if __name__ == "__main__":
         logger.error("Please input screen_name of the user")
         exit(-1)
     screen_name = sys.argv[1]
-    downloader = UserInfoDownloader(headers)
+    downloader = UserInfoPage()
     user_info = downloader.get_info(screen_name)
     print(get_formatted_json_str(user_info))

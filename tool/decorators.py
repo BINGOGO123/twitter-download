@@ -14,9 +14,13 @@ class LoggerWrapper:
                 self.logger.info("{}({})".format(func.__name__, ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
             else:
                 self.logger.info("{}({},{})".format(func.__name__, ",".join([str(x) for x in args]), ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
-            result = func(*args, **kwargs)
+            try:
+                result = func(*args, **kwargs)
+            except Exception as ex:
+                self.logger.exception(ex)
+                raise ex
             if self.print_result:
-                self.logger.info("{}={}".format(func.__name__, result))
+                self.logger.info("Result of ({})={}".format(func.__name__, result))
             return result
  
         return logger_wrap

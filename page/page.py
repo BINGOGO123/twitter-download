@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-class Downloader:
+class Page:
     def __init__(self):
         pass
     

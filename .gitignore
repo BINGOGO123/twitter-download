@@ -10,3 +10,4 @@ virtual
 *.conf
 *.json
 __pycache__
+default_persistence_dir
