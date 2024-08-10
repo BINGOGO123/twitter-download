@@ -205,11 +205,6 @@ You can refer the below format to modify `config.json` to configure advanced opt
 }
 ```
 
-## TODO
-
-- [ ] Avoid to repeatedly log the same exception
-- [ ] Gallary generation tools
-
 ## Old Version(deprecated)
 
 ### Preparement(deprecated)

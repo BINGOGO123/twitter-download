@@ -10,9 +10,12 @@ logger: logging.Logger
 module_config, logger = get_module_config(__name__)
 
 if __name__ == "__main__":
-    sqlite_manager = ResourceDataManager(sqlite.Db())
-    mysql_manager = ResourceDataManager(mysql.Db())
+    sqlite_db_name = module_config.get("sqlite_db_name")
+    sqlite_manager = ResourceDataManager(sqlite.Db(sqlite_db_name = sqlite_db_name) if sqlite_db_name != None else sqlite.Db())
     
+    db_connect_params = module_config.get("db_connect_params", {})
+    mysql_manager = ResourceDataManager(mysql.Db(**db_connect_params))
+
     sqlite_media_set = set(sqlite_manager.get_all_data())
     mysql_media_set = set(mysql_manager.get_all_data())
     

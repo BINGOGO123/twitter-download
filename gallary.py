@@ -5,7 +5,6 @@ import uuid
 import logging
 from configs import get_module_config
 
-
 # 获取配置和 logger
 module_config: dict
 logger: logging.Logger
@@ -27,8 +26,12 @@ if __name__ == "__main__":
         logger.error("Please input the source dir which is used to generate gallay.")
         exit(-1)
     target_dir = sys.argv[1]
+    if len(sys.argv) > 2:
+        gallary_dir = sys.argv[2]
+        
     if not os.path.exists(gallary_dir):
         os.makedirs(gallary_dir)
+        
     dir_names = os.listdir(target_dir)
     dir_names.sort(reverse = True)
     file_name = os.path.join(gallary_dir, str(uuid.uuid4()) + ".md")
@@ -44,16 +47,25 @@ if __name__ == "__main__":
         summary_json_file = open(summary_json_path, "rb")
         summary_json = json.loads(summary_json_file.read().decode("utf8"))
         summary_json_file.close()
-        md_file.write("## {}\n\n".format(summary_json.get("user_info", {}).get("name")))
+        full_text = summary_json.get("twitter_info", {}).get("full_text")
+        if full_text != None:
+            md_file.write("## <font color='red'>\<{}\></font> {}\n\n".format(summary_json.get("user_info", {}).get("name"), full_text.replace("\n", " ")))
+        else:
+            md_file.write("## {} {}\n\n".format(summary_json.get("user_info", {}).get("name")))
         md_file.write("> **Author ID:** {}\n".format(str(summary_json.get("user_info", {}).get("screen_name"))))
         md_file.write(">\n")
         md_file.write("> **Discription:** {}\n".format(str(summary_json.get("user_info", {}).get("description"))))
         md_file.write(">\n")
         md_file.write("> **Create Time:** {}\n".format(str(summary_json.get("twitter_info", {}).get("created_at"))))
         md_file.write(">\n")
+        md_file.write("> **Reply Count:** {}\n".format(str(summary_json.get("twitter_info", {}).get("reply_count"))))
+        md_file.write(">\n")
+        tag_str = " ".join(["`{}`".format(x) for x in summary_json.get("twitter_info", {}).get("tags")])
+        if tag_str != "":
+            md_file.write("> **Tags:** {}\n".format(tag_str))
+            md_file.write(">\n")
         md_file.write("> [Twitter Link]({})\n\n".format(str(summary_json.get("twitter_info", {}).get("url"))))
         
-        full_text: str = summary_json.get("twitter_info", {}).get("full_text")
         if full_text != None:
             full_text.replace("\n", "<br/>")
             md_file.write(full_text)
@@ -72,12 +84,12 @@ if __name__ == "__main__":
         
         medias = list(medias_dict.values())
         medias.sort()
-            
+
         for media in medias:
             if is_vedio(media):
                 md_file.write('<video id="video" controls="" src="{}" preload="none">\n\n'.format(os.path.abspath(os.path.join(dir_path, media))))
             else:
                 md_file.write("![{}]({})\n\n".format(media, os.path.abspath(os.path.join(dir_path, media))))
-    logger.info(os.path.abspath(file_name))
+    logger.info("Saving at: {}".format(os.path.abspath(file_name)))
     md_file.close()
     
