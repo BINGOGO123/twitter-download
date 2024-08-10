@@ -11,3 +11,5 @@ virtual
 *.json
 __pycache__
 default_persistence_dir
+*.db
+new_target

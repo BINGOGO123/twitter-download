@@ -5,7 +5,7 @@ from abc import abstractmethod
 
 class AbstractSinglePage(AbstractPage):
     @LoggerWrapper(logger)
-    def get_info(self, *args) -> dict:
+    def get_info(self, *args):
         try:
             # 根据参数生成url
             url = self.get_url(*args)

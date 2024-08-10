@@ -4,10 +4,16 @@ import sys
 from tool.tool import get_formatted_json_str
 from .tweet_page import AbstractTweetPage
 from . import module_config
+from downloader.downloader import Downloader
+from downloader.common_downloader import CommonDownloader
 
 class TweetedTweetPage(AbstractTweetPage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, downloader: Downloader, **kwargs):
+        """初始化
+        Optional Args:
+            page_count(int): 每次请求的twitter数量
+        """
+        super().__init__(downloader, **kwargs)
         self.page_count = kwargs.get("page_count", module_config.get("page_count"))
         
         
@@ -27,6 +33,6 @@ if __name__ == "__main__":
         logger.error("Please input rest id of the user")
         exit(-1)
     rest_id = sys.argv[1]
-    tweet = TweetedTweetPage()
+    tweet = TweetedTweetPage(CommonDownloader())
     twitter_info = tweet.get_info(rest_id)
     print(get_formatted_json_str(twitter_info))

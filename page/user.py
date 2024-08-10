@@ -4,6 +4,7 @@ from tool.tool import get_formatted_json_str
 from .parse import get_user_info_from_user_response
 from .single_page import AbstractSinglePage
 from err.err import *
+from downloader.common_downloader import CommonDownloader
 
 
 class UserInfoPage(AbstractSinglePage):
@@ -23,6 +24,6 @@ if __name__ == "__main__":
         logger.error("Please input screen_name of the user")
         exit(-1)
     screen_name = sys.argv[1]
-    downloader = UserInfoPage()
+    downloader = UserInfoPage(CommonDownloader())
     user_info = downloader.get_info(screen_name)
     print(get_formatted_json_str(user_info))

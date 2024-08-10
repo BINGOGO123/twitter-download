@@ -1,4 +1,4 @@
-from .common_saver import AbstractSaver
+from .saver import Saver
 from tool.decorators import LoggerWrapper
 from . import logger
 import os
@@ -6,10 +6,17 @@ from tool.tool import get_formatted_json_str
 from . import module_config
 import sys
 import json
+from downloader.downloader import Downloader
+from downloader.common_downloader import CommonDownloader
 
-class TwitterSaver(AbstractSaver):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+
+class TwitterSaver(Saver):
+    def __init__(self, downloader: Downloader, **kwargs):
+        """初始化
+        Optional args:
+            target_dir(str): 默认的存储dir
+        """
+        self.downloader: Downloader = downloader
         self.target_dir = kwargs.get("target_dir", module_config.get("target_dir"))
 
 
@@ -17,9 +24,10 @@ class TwitterSaver(AbstractSaver):
     def save(self, pointer: dict, target_dir = None) -> list[str]:
         if target_dir == None:
             target_dir = self.target_dir
+            
+        result_target_dir_list = []
         try:
             result_list = pointer.get("content_info", {}).get("result_list", [])
-            result_target_dir_list = []
             total_count = len(result_list)
             for i in range(len(result_list)):
                 logger.info("Saving result: {}, total count: {}".format(i + 1, total_count))
@@ -34,12 +42,12 @@ class TwitterSaver(AbstractSaver):
                 media_info_list = result.get("twitter_info", {}).get("medias", [])
                 self.save_media_info_list(media_info_list, result_target_dir)
                 self.save_result_json(result, result_target_dir)
-            return result_target_dir_list
         except Exception as ex:
             logger.exception(ex)
-            return []
+        return result_target_dir_list
 
-    
+
+
     def create_dir(self, target_dir: str) -> None:
         if not os.path.isdir(target_dir):
             os.makedirs(target_dir)
@@ -49,9 +57,8 @@ class TwitterSaver(AbstractSaver):
         total_count = len(media_info_list)
         for index in range(len(media_info_list)):
             logger.info("Saving media: {}, total count: {}".format(index + 1, total_count))
-            saved_dir = self.save_media_info(media_info_list[index], target_dir, index + 1)
-            logger.info("Saved at: {}".format(saved_dir))
-
+            save_name = self.save_media_info(media_info_list[index], target_dir, index + 1)
+            logger.info("Saved at: {}".format(save_name))
 
     def save_media_info(self, media_info: dict, target_dir: str, order: int) -> str:
         try:
@@ -60,13 +67,28 @@ class TwitterSaver(AbstractSaver):
                 url = media_info.get("media_url_https")
             if url == None or url == "":
                 return None
-            media_name = url.split("?")[0].split("/")[-1]
-            save_name = os.path.join(target_dir, "{}_{}".format(order, media_name))
-            data = self.downloader.get_tw_response_bytes_by_url(url)
-            self.save_media(save_name, data)
-            return os.path.abspath(save_name)
+            data = self.get_data_by_url(url)
+            save_name = self.generate_save_name(target_dir, order, url)
+            save_name = self.save_media(save_name, data)
+            self.save_record(save_name, data, url)
+            return save_name
         except Exception as ex:
             logger.exception(ex)
+
+
+    def save_record(self, save_name:str, data: bytes, url: str):
+        pass   
+
+
+    def generate_save_name(self, target_dir, order, url):
+        media_name = url.split("?")[0].split("/")[-1]
+        save_name = os.path.join(target_dir, "{}_{}".format(order, media_name))
+        return save_name
+
+
+    def get_data_by_url(self, url: str) -> bytes:
+        data = self.downloader.get_tw_response_bytes_by_url(url)
+        return data
             
 
     def save_media(self, file_name: str, content: bytes) -> str:
@@ -90,7 +112,13 @@ if __name__ == "__main__":
         exit(-1)
     filename = sys.argv[1]
     f = open(filename, "rb")
-    pointer_list = json.loads(f.read().decode("utf8"))
-    saver = TwitterSaver()
-    for pointer in pointer_list:
-        saver.save(pointer)
+    try:
+        pointer_list = json.loads(f.read().decode("utf8"))
+    finally:
+        f.close()
+    saver = TwitterSaver(CommonDownloader())
+    if isinstance(pointer_list, list):
+        for pointer in pointer_list:
+            saver.save(pointer)
+    else:
+        saver.save(pointer_list)

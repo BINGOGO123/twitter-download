@@ -1,10 +1,7 @@
+from configs import get_module_config
 import logging
-from configs import base_config
-from tool.tool import initialLogger
 
-module_name = __name__
-logger = logging.getLogger(module_name)
-
-module_config = base_config.get(module_name)
-
-initialLogger(logger, module_name, **module_config.get("logs"))
+# 获取配置和 logger
+module_config: dict
+logger: logging.Logger
+module_config, logger = get_module_config(__name__)

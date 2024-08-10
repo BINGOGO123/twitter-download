@@ -9,7 +9,8 @@ import copy
 class CommonDownloader(Downloader):
     def __init__(self, **kwargs):
         """初始化
-        Args:
+        Optional Args:
+            requests_kwargs(dict): 请求参数
             request_max_count(int): 请求最大次数
         """
         self.default_requests_kwargs = kwargs.get("requests_kwargs", module_config.get("requests_kwargs"))
@@ -36,11 +37,33 @@ class CommonDownloader(Downloader):
 
     @LoggerWrapper(logger)
     def get_tw_response_json_by_url(self, url: str, params = None, **kwargs) -> dict:
-        response = self.get_tw_response_by_url(url, params, **kwargs)
-        return response.json() if response != None else {}
+        """通过url请求获取json结果
+        Args:
+            url(str): url
+            params(str): params
+            kwargs: 其他请求参数
+        """
+        try:
+            response = self.get_tw_response_by_url(url, params, **kwargs)
+            if response != None:
+                return response.json()
+        except Exception as ex:
+            logger.exception(ex)
+        return {}
 
 
     @LoggerWrapper(logger)
     def get_tw_response_bytes_by_url(self, url: str, params = None, **kwargs) -> bytes:
-        response = self.get_tw_response_by_url(url, params, **kwargs)
-        return response.content if response != None else bytes()
+        """通过url请求获取二进制结果
+        Args:
+            url(str): url
+            params(str): params
+            kwargs: 其他请求参数
+        """
+        try:
+            response = self.get_tw_response_by_url(url, params, **kwargs)
+            if response != None:
+                return response.content
+        except Exception as ex:
+            logger.exception(ex)
+        return bytes()
