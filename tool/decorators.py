@@ -9,18 +9,18 @@ class LoggerWrapper:
 
         def logger_wrap(*args, **kwargs):
             if len(kwargs) == 0:
-                self.logger.info("{}({})".format(func.__name__, ",".join([str(x) for x in args])))
+                self.logger.debug("{}({})".format(func.__name__, ",".join([str(x) for x in args])))
             elif len(args) == 0:
-                self.logger.info("{}({})".format(func.__name__, ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
+                self.logger.debug("{}({})".format(func.__name__, ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
             else:
-                self.logger.info("{}({},{})".format(func.__name__, ",".join([str(x) for x in args]), ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
+                self.logger.debug("{}({},{})".format(func.__name__, ",".join([str(x) for x in args]), ",".join(["{}={}".format(x, kwargs[x]) for x in kwargs.keys()])))
             try:
                 result = func(*args, **kwargs)
             except Exception as ex:
                 self.logger.exception(ex)
                 raise ex
             if self.print_result:
-                self.logger.info("Result of ({})={}".format(func.__name__, result))
+                self.logger.debug("Result of ({})={}".format(func.__name__, result))
             return result
  
         return logger_wrap

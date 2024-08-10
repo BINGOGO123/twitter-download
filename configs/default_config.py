@@ -58,6 +58,8 @@ default_config = {
         "twitter_download_dir": "./download_info/twitter/",
         "tweeted_download_dir": "./download_info/tweeted/",
         "favorite_download_dir": "./download_info/favorite/",
-        "download_type": "tweeted"
+        "gallary_dir": "./download_info/gallary/",
+        "download_type": "tweeted",
+        "limited_count": 999999999,
     }
 }

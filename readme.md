@@ -122,6 +122,18 @@ A simple twitter download tool. Functions as follows:
     python -m persistance.efficient_twitter_saver {json_file_name}
     ```
 
+14. Sync data from mysql to sqlite and from sqlite to mysql
+
+    ```shell
+    python migrate.py
+    ```
+
+15. Generate markdown gallary
+
+    ```shell
+    python gallary.py {source_path}
+    ```
+
 ## Configure advanced options
 
 You can refer the below format to modify `config.json` to configure advanced options.
@@ -180,7 +192,9 @@ You can refer the below format to modify `config.json` to configure advanced opt
         "twitter_download_dir": "./download_info/twitter/",
         "tweeted_download_dir": "./download_info/tweeted/",
         "favorite_download_dir": "./download_info/favorite/",
+        "gallary_dir": "./download_info/gallary/",
         "download_type": "tweeted",
+        "limited_count": 999999999,
         "logs": {
             "logs_dir": "logs/",
             "logger_level": "logging.DEBUG",
@@ -193,11 +207,12 @@ You can refer the below format to modify `config.json` to configure advanced opt
 
 ## TODO
 
-- [ ] Avoid to repeatly log the same exception
+- [ ] Avoid to repeatedly log the same exception
+- [ ] Gallary generation tools
 
-## Old Version
+## Old Version(deprecated)
 
-### Preparement
+### Preparement(deprecated)
 
 1. Install packages
 

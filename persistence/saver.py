@@ -4,6 +4,11 @@ class Saver:
     def __init__(self):
         pass
     
+
+    @abstractmethod
+    def save_all(self, pointer_list: list[dict], target_dir = None) -> list[str]:
+        pass
+    
     
     @abstractmethod
     def save(self, pointer: dict, target_dir: str) -> str:

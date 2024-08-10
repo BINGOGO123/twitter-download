@@ -18,6 +18,17 @@ class TwitterSaver(Saver):
         """
         self.downloader: Downloader = downloader
         self.target_dir = kwargs.get("target_dir", module_config.get("target_dir"))
+        
+    
+    @LoggerWrapper(logger)
+    def save_all(self, pointer_list: list[dict], target_dir = None) -> list[str]:
+        ret = []
+        size = len(pointer_list)
+        for i in range(len(pointer_list)):
+            pointer = pointer_list[i]
+            logger.info("Saving pointer: {}, total count: {}".format(i + 1, size))
+            ret += self.save(pointer, target_dir)
+        return ret
 
 
     @LoggerWrapper(logger, True)
@@ -66,9 +77,12 @@ class TwitterSaver(Saver):
             if url == None or url == "":
                 url = media_info.get("media_url_https")
             if url == None or url == "":
-                return None
-            data = self.get_data_by_url(url)
+                return
             save_name = self.generate_save_name(target_dir, order, url)
+            if os.path.isfile(save_name):
+                logger.error("{} has existed".format(save_name))
+                return
+            data = self.get_data_by_url(url)
             save_name = self.save_media(save_name, data)
             self.save_record(save_name, data, url)
             return save_name
@@ -83,7 +97,7 @@ class TwitterSaver(Saver):
     def generate_save_name(self, target_dir, order, url):
         media_name = url.split("?")[0].split("/")[-1]
         save_name = os.path.join(target_dir, "{}_{}".format(order, media_name))
-        return save_name
+        return os.path.abspath(save_name)
 
 
     def get_data_by_url(self, url: str) -> bytes:

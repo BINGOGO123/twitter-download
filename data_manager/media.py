@@ -37,6 +37,16 @@ class Media:
     def __repr__(self):
         return self.__str__()
     
+    
+    def __eq__(self, other):
+        if isinstance(other, Media):
+            return self.media_url == other.media_url and self.storage_path == other.storage_path and self.suffix_type == other.suffix_type and self.content_md5 == other.content_md5
+        return NotImplemented
+
+
+    def __hash__(self):
+        return hash((self.media_url, self.storage_path, self.suffix_type, self.content_md5))
+    
 
     def set_media_url(self, media_url: str):
         self.media_url = media_url
