@@ -54,4 +54,10 @@ default_config = {
             "timeout": 5,
         },
     },
+    "__main__": {
+        "twitter_download_dir": "./download_info/twitter/",
+        "tweeted_download_dir": "./download_info/tweeted/",
+        "favorite_download_dir": "./download_info/favorite/",
+        "download_type": "tweeted"
+    }
 }

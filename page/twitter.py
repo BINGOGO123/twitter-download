@@ -19,7 +19,7 @@ class TwitterInfoPage(AbstractSinglePage):
     def parse_response_info(self, data: dict) -> dict:
         entries = get_entries_from_twitter_response(data)
         return get_entry_info_list_from_entries(entries)
-    
+
 
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
