@@ -26,7 +26,7 @@ class TwitterSaver(Saver):
         size = len(pointer_list)
         for i in range(len(pointer_list)):
             pointer = pointer_list[i]
-            logger.info("Saving pointer: {}, total count: {}".format(i + 1, size))
+            logger.info("Twitter saving progress [{}/{}]".format(i + 1, size))
             ret += self.save(pointer, target_dir)
         return ret
 
@@ -41,7 +41,7 @@ class TwitterSaver(Saver):
             result_list = pointer.get("content_info", {}).get("result_list", [])
             total_count = len(result_list)
             for i in range(len(result_list)):
-                logger.info("Saving result: {}, total count: {}".format(i + 1, total_count))
+                logger.info("Result saving progress [{}/{}]".format(i + 1, total_count))
                 result = result_list[i]
                 rest_id = result.get("rest_id")
                 if rest_id == None or rest_id == "":
@@ -67,9 +67,9 @@ class TwitterSaver(Saver):
     def save_media_info_list(self, media_info_list: list, target_dir: str) -> None:
         total_count = len(media_info_list)
         for index in range(len(media_info_list)):
-            logger.info("Saving media: {}, total count: {}".format(index + 1, total_count))
+            logger.info("Media saving progress [{}/{}]".format(index + 1, total_count))
             save_name = self.save_media_info(media_info_list[index], target_dir, index + 1)
-            logger.info("Saved at: {}".format(save_name))
+            logger.info("Media saved at: {}".format(save_name))
 
     def save_media_info(self, media_info: dict, target_dir: str, order: int) -> str:
         try:

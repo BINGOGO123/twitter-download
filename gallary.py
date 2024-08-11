@@ -21,28 +21,20 @@ def is_vedio(name: str) -> bool:
             return True
     return False
 
-if __name__ == "__main__":
-    if (len(sys.argv) < 2):
-        logger.error("Please input the source dir which is used to generate gallay.")
-        exit(-1)
-    target_dir = sys.argv[1]
-    if len(sys.argv) > 2:
-        gallary_dir = sys.argv[2]
-        
-    if not os.path.exists(gallary_dir):
-        os.makedirs(gallary_dir)
-        
-    dir_names = os.listdir(target_dir)
-    dir_names.sort(reverse = True)
+
+def generate_gallary_md(gallary_dir, target_dir):
     file_name = os.path.join(gallary_dir, str(uuid.uuid4()) + ".md")
     md_file = open(file_name, "w", encoding = "utf8")
     md_file.write("# {}\n\n".format(target_dir))
+    
+    dir_names = os.listdir(target_dir)
+    dir_names.sort(reverse = True)
     for dir_name in dir_names:
         dir_path = os.path.join(target_dir, dir_name)
         if not os.path.isdir(dir_path):
             continue
         summary_json_path = os.path.join(dir_path, "result.json")
-        if not os.path.exists(summary_json_path):
+        if not os.path.isfile(summary_json_path):
             continue
         summary_json_file = open(summary_json_path, "rb")
         summary_json = json.loads(summary_json_file.read().decode("utf8"))
@@ -72,24 +64,27 @@ if __name__ == "__main__":
             md_file.write("\n\n")
         
         sub_dir_names = os.listdir(dir_path)
-        medias_dict = dict()
         for sub_dir_name in sub_dir_names:
             if sub_dir_name.endswith("json") or sub_dir_name.endswith("txt"):
                 continue
-            prefix = sub_dir_name.split(".")[0]
             if is_vedio(sub_dir_name):
-                medias_dict[prefix] = sub_dir_name
-            elif medias_dict.get(prefix) == None:
-                medias_dict[prefix] = sub_dir_name
-        
-        medias = list(medias_dict.values())
-        medias.sort()
-
-        for media in medias:
-            if is_vedio(media):
-                md_file.write('<video id="video" controls="" src="{}" preload="none">\n\n'.format(os.path.abspath(os.path.join(dir_path, media))))
+                md_file.write('<video id="video" controls="" src="{}" preload="none">\n\n'.format(os.path.abspath(os.path.join(dir_path, sub_dir_name))))
             else:
-                md_file.write("![{}]({})\n\n".format(media, os.path.abspath(os.path.join(dir_path, media))))
+                md_file.write("![{}]({})\n\n".format(sub_dir_name, os.path.abspath(os.path.join(dir_path, sub_dir_name))))
+
     logger.info("Saving at: {}".format(os.path.abspath(file_name)))
     md_file.close()
-    
+
+
+if __name__ == "__main__":
+    if (len(sys.argv) < 2):
+        logger.error("Please input the source dir which is used to generate gallay.")
+        exit(-1)
+    target_dir = sys.argv[1]
+    if len(sys.argv) > 2:
+        gallary_dir = sys.argv[2]
+        
+    if not os.path.exists(gallary_dir):
+        os.makedirs(gallary_dir)
+        
+    generate_gallary_md(gallary_dir, target_dir)

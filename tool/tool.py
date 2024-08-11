@@ -1,6 +1,7 @@
 import copy
 import json
 import types
+import hashlib
 
 
 def cover(o1: dict, o2: dict) -> dict:
@@ -40,3 +41,16 @@ def get_formatted_json_str(json_info) -> str:
     return json.dumps(
         json_info, sort_keys=True, indent=4, separators=(", ", ": "), ensure_ascii=False
     )
+
+
+def generate_md5_hash(data_bytes: bytes) -> str:
+    # 创建一个md5 hash对象
+    md5_hash = hashlib.md5()
+
+    # 更新hash对象的数据
+    md5_hash.update(data_bytes)
+
+    # 获取十六进制形式的哈希值
+    hex_digest = md5_hash.hexdigest()
+
+    return hex_digest

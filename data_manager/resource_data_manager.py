@@ -148,6 +148,8 @@ class ResourceDataManager(DataManager):
             insert_value_list.append(media.get_storage_path())
         return insert_key_list, insert_value_list
 
+
+    @LoggerWrapper(logger)
     def get_all_data(self) -> list[Media]:
         try:
             ret = self.database.execute(
@@ -157,3 +159,16 @@ class ResourceDataManager(DataManager):
         except Exception as ex:
             logger.exception(ex)
         return []
+    
+    
+    @LoggerWrapper(logger)
+    def delete_data_info_by_storage_path(self, storage_path: str) -> bool:
+        try:
+            self.database.escape_execute(
+                "delete from media where storage_path = {}",
+                storage_path
+            )
+            return True
+        except Exception as ex:
+            logger.exception(ex)
+        return False

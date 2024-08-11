@@ -14,7 +14,7 @@ class Media:
     def __str__(self):
         return (
             "{"
-            + "{}:{},{}:{},{}:{},{}:{},{}:{},{}:{},{}:{}".format(
+            + "{}={}, {}={}, {}={}, {}={}, {}={}, {}={}, {}={}".format(
                 "media_url",
                 self.media_url,
                 "storage_path",

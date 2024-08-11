@@ -4,12 +4,12 @@ from data_manager.data_manager import DataManager
 from data_manager.media import Media
 import os
 from . import logger
-import hashlib
 import sys
 from downloader.common_downloader import CommonDownloader
 from database.abstract_db import AbstractDb
 import json
 from data_manager.resource_data_manager import ResourceDataManager
+from tool.tool import generate_md5_hash
 
 
 class EfficientTwitterSaver(TwitterSaver):
@@ -20,19 +20,6 @@ class EfficientTwitterSaver(TwitterSaver):
         """
         super().__init__(downloader, **kwargs)
         self.data_manager: DataManager = data_manager
-
-
-    def generate_md5_hash(self, data_bytes: bytes) -> str:
-        # 创建一个md5 hash对象
-        md5_hash = hashlib.md5()
-
-        # 更新hash对象的数据
-        md5_hash.update(data_bytes)
-
-        # 获取十六进制形式的哈希值
-        hex_digest = md5_hash.hexdigest()
-
-        return hex_digest
 
 
     def save_media(self, save_name, content: bytes):
@@ -46,7 +33,7 @@ class EfficientTwitterSaver(TwitterSaver):
     
     def save_record(self, save_name:str, data: bytes, url: str):
         if save_name != None and data != None and url != None:
-            self.data_manager.insert_data(Media(media_url = url, storage_path = save_name, content_md5 = self.generate_md5_hash(data)))
+            self.data_manager.insert_data(Media(media_url = url, storage_path = save_name, content_md5 = generate_md5_hash(data)))
 
 
     def get_data_by_url(self, url: str) -> bytes:

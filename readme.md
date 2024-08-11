@@ -134,6 +134,12 @@ A simple twitter download tool. Functions as follows:
     python gallary.py {source_path}
     ```
 
+16. Check database
+
+    ```shell
+    python db_correct.py
+    ```
+
 ## Configure advanced options
 
 You can refer the below format to modify `config.json` to configure advanced options.
@@ -200,7 +206,9 @@ You can refer the below format to modify `config.json` to configure advanced opt
             "logger_level": "logging.DEBUG",
             "file_level": "logging.DEBUG",
             "stream_level": "logging.INFO"
-        }
+        },
+        "md5_check": false,
+        "db_correct_remove_invalid": false
     }
 }
 ```

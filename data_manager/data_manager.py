@@ -19,3 +19,8 @@ class DataManager:
     @abstractmethod
     def get_all_data(self) -> list[Media]:
         pass
+    
+        
+    @abstractmethod
+    def delete_data_info_by_storage_path(self, storage_path: str) -> bool:
+        pass

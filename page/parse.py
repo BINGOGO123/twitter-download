@@ -192,7 +192,7 @@ def get_result_info_from_content(content: dict) -> dict:
         dict: result
     """
     result = content.get("itemContent", {}).get("tweet_results", {}).get("result", {})
-    retweeted_status_result = result.get("retweeted_status_result", {}).get("result")
+    retweeted_status_result = result.get("legacy", {}).get("retweeted_status_result", {}).get("result")
     if retweeted_status_result != None:
         result = retweeted_status_result
     tweet = result.get("tweet")

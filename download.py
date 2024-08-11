@@ -113,10 +113,10 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
     elif user_id != None:
         if download_type.lower() == "tweeted":
             logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, tweeted_download_dir, limited_count))
-            download_tweeted_by_user_id(screen_name, tweeted_download_dir, limited_count)
+            download_tweeted_by_user_id(user_id, tweeted_download_dir, limited_count)
         elif download_type.lower() == "favorite":
             logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, favorite_download_dir, limited_count))
-            download_favorite_by_user_id(screen_name, favorite_download_dir, limited_count)
+            download_favorite_by_user_id(user_id, favorite_download_dir, limited_count)
         else:
             logger.error("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
             exit(-1)
