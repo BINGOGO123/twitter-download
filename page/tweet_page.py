@@ -2,8 +2,20 @@ from . import logger
 from tool.decorators import LoggerWrapper
 from abc import abstractmethod
 from .common_page import AbstractPage
+from tqdm import tqdm
+from . import module_config
+from downloader.downloader import Downloader
 
 class AbstractTweetPage(AbstractPage): 
+    def __init__(self, downloader: Downloader, **kwargs):
+        """初始化
+        Optional Args:
+            page_count(int): 每次请求的twitter数量
+        """
+        super().__init__(downloader, **kwargs)
+        self.page_count = kwargs.get("page_count", module_config.get("page_count"))
+        
+        
     @LoggerWrapper(logger)
     def get_info(self, rest_id: str, limited_count: int = 999999999) -> list:
         """获取一个用户所有twitter信息
@@ -18,23 +30,30 @@ class AbstractTweetPage(AbstractPage):
             next_url = self.get_base_url(rest_id)
             all_entry_info = []
             counter = 1
-            while next_url != None:
-                logger.info("Round :{}".format(counter))
-                counter += 1
-                response_json = self.downloader.get_tw_response_json_by_url(next_url)
-                response_info = self.parse_response_info(response_json)
-                next_url = self.get_next_url(rest_id, response_info)
-                current_entry_info = self.get_valid_response_info(response_info)
-                all_entry_info += current_entry_info
-                # 打印本页所有信息数量
-                logger.info("The count of current round is {}, all count is {}".format(len(current_entry_info), len(all_entry_info)))
-                # 如果本页没有了，则终止
-                if len(current_entry_info) == 0:
-                    break
-                # 如果目前数量已经超过上限，则终止
-                if len(all_entry_info) >= limited_count:
-                    logger.info("Current count {} has exceeded the limited count {}. terminated.".format(len(current_entry_info), limited_count))
-                    break
+            estimate_count = self.page_count * 3
+            with tqdm(total=estimate_count, desc="Page download progress", dynamic_ncols=True, colour="magenta") as pbar:
+                while next_url != None:
+                    logger.debug("Round :{}".format(counter))
+                    counter += 1
+                    response_json = self.downloader.get_tw_response_json_by_url(next_url)
+                    response_info = self.parse_response_info(response_json)
+                    next_url = self.get_next_url(rest_id, response_info)
+                    current_entry_info = self.get_valid_response_info(response_info)
+                    all_entry_info += current_entry_info
+                    pbar.update(len(current_entry_info))
+                    if pbar.n >= pbar.total:
+                        pbar.total += estimate_count * 0.5
+                    # 打印本页所有信息数量
+                    logger.debug("The count of current round is {}, all count is {}".format(len(current_entry_info), len(all_entry_info)))
+                    # 如果本页没有了，则终止
+                    if len(current_entry_info) == 0:
+                        break
+                    # 如果目前数量已经超过上限，则终止
+                    if len(all_entry_info) >= limited_count:
+                        logger.debug("Current count {} has exceeded the limited count {}. terminated.".format(len(current_entry_info), limited_count))
+                        break
+                if pbar.n < pbar.total:
+                    pbar.total = pbar.n
             return all_entry_info
         except Exception as ex:
             logger.exception(ex)

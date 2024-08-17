@@ -9,7 +9,7 @@ default_config = {
             "logs_dir": "logs/",
             "logger_level": logging.DEBUG,
             "file_level": logging.DEBUG,
-            "stream_level": logging.INFO,
+            "stream_level": logging.CRITICAL,
         },
     },
     "database": {
@@ -63,5 +63,8 @@ default_config = {
         "limited_count": 999999999,
         "md5_check": False,
         "db_correct_remove_invalid": False,
+        "logs": {
+            "stream_level": logging.INFO,
+        },
     }
 }

@@ -98,7 +98,7 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
         logger.info("Download twitter info with twitter id [{}]. Target dir is [{}].".format(twitter_id, twitter_download_dir))
         download_by_twitter_id(twitter_id, twitter_download_dir)
     elif download_type == None:
-        logger.error("No type is specified, supported values: favorite, tweeted.")
+        logger.critical("No type is specified, supported values: favorite, tweeted.")
         exit(-1)
     elif screen_name != None:
         if download_type.lower() == "tweeted":
@@ -108,7 +108,7 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
             logger.info("Download [{}] info with screen name [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, screen_name, favorite_download_dir, limited_count))
             download_favorite_by_screen_name(screen_name, favorite_download_dir, limited_count)
         else:
-            logger.error("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
+            logger.critical("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
             exit(-1)
     elif user_id != None:
         if download_type.lower() == "tweeted":
@@ -118,10 +118,10 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
             logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, favorite_download_dir, limited_count))
             download_favorite_by_user_id(user_id, favorite_download_dir, limited_count)
         else:
-            logger.error("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
+            logger.critical("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
             exit(-1)
     else:
-        logger.error("At least one args of --twitter-id, --screen-name, --user-id are required.")
+        logger.critical("At least one args of --twitter-id, --screen-name, --user-id are required.")
         exit(-1)
 
 

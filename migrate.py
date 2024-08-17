@@ -3,11 +3,22 @@ from database import sqlite
 from database import mysql
 import logging
 from configs import get_module_config
+from tqdm import tqdm
+from data_manager.data_manager import DataManager
 
 # 获取配置和 logger
 module_config: dict
 logger: logging.Logger
 module_config, logger = get_module_config(__name__)
+
+
+def migrate_data(data_manager: DataManager, insert_set: set, from_name: str, to_name: str):
+    with tqdm(total=len(insert_set), desc="{} -> {}".format(from_name, to_name), colour="green") as pbar:
+        for media in insert_set:
+            data_manager.insert_data(media)
+            pbar.update(1)
+    logger.debug("migrate {} data from {} to {}".format(insert_set, from_name, to_name))
+
 
 if __name__ == "__main__":
     sqlite_db_name = module_config.get("sqlite_db_name")
@@ -22,11 +33,5 @@ if __name__ == "__main__":
     mysql_insert_set = mysql_media_set - sqlite_media_set
     sqlite_insert_set = sqlite_media_set - mysql_media_set
     
-    for media in mysql_insert_set:
-        sqlite_manager.insert_data(media)
-        
-    for media in sqlite_insert_set:
-        mysql_manager.insert_data(media)
-    
-    logger.info("migrate {} data from mysql to sqlite".format(len(mysql_insert_set)))
-    logger.info("migrate {} data from sqlite to mysql".format(len(sqlite_insert_set)))
+    migrate_data(sqlite_manager, mysql_insert_set, "Mysql", "Sqlite")
+    migrate_data(mysql_manager, sqlite_insert_set, "Sqlite", "Mysql")

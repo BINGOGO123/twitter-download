@@ -13,4 +13,4 @@ __pycache__
 default_persistence_dir
 *.db
 new_target
-download_info
+download_info 

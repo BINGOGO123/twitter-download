@@ -10,7 +10,23 @@ from database.abstract_db import AbstractDb
 import json
 from data_manager.resource_data_manager import ResourceDataManager
 from tool.tool import generate_md5_hash
+from downloader.data_strategy import DataStrategy
+import hashlib
 
+
+class Md5DataStrategy(DataStrategy):
+    def __init__(self):
+        self.hasher = hashlib.md5()
+        
+    
+    def execute(self, data: bytes):
+        self.hasher.update(data)
+        
+
+    def get_result(self):
+        return self.hasher.hexdigest()
+    
+    
 
 class EfficientTwitterSaver(TwitterSaver):
     def __init__(self, downloader: Downloader, data_manager: DataManager, **kwargs):
@@ -20,39 +36,54 @@ class EfficientTwitterSaver(TwitterSaver):
         """
         super().__init__(downloader, **kwargs)
         self.data_manager: DataManager = data_manager
-
-
-    def save_media(self, save_name, content: bytes):
-        save_name = os.path.abspath(save_name)
-        if os.path.isfile(save_name):
-            logger.error("{} has existed".format(save_name))
-            return
-        save_name = super().save_media(save_name, content)
-        return save_name
-    
-    
-    def save_record(self, save_name:str, data: bytes, url: str):
-        if save_name != None and data != None and url != None:
-            self.data_manager.insert_data(Media(media_url = url, storage_path = save_name, content_md5 = generate_md5_hash(data)))
-
-
-    def get_data_by_url(self, url: str) -> bytes:
+        
+        
+    def save_file(self, file_name: str, url: str) -> str:
         try:
             media_list: list[Media] = self.data_manager.get_data_info_by_url(url)
             if len(media_list) > 0:
                 for media in media_list:
                     storage_path = media.get_storage_path()
                     if storage_path != None and os.path.isfile(storage_path):
-                        f = open(storage_path, "rb")
                         try:
-                            data = f.read()
-                            logger.info("Get data from disk, url={}, storage_path={}".format(url, storage_path))
-                            return data
-                        finally:
-                            f.close()
+                            with open(storage_path, "rb") as f:
+                                data = f.read()
+                                logger.debug("Get data from disk, url={}, storage_path={}".format(url, storage_path))
+                                file_name = self.save_media_content(file_name, data)
+                                self.save_record(file_name, url, generate_md5_hash(data))
+                                return file_name
+                        except Exception as ex:
+                            logger.exception(ex)
         except Exception as ex:
-            logger.error(ex)
-        return super().get_data_by_url(url)
+            logger.exception(ex)
+        
+        file_name = self.save_file_by_url(file_name, url)
+        return file_name
+
+
+    def save_file_by_url(self, file_name, url):
+        data_strategy = Md5DataStrategy()
+        try:
+            file_name = self.downloader.download_file(file_name, url, None, data_strategy)
+            if file_name != None:
+                self.save_record(file_name, url, data_strategy.get_result())
+                return file_name
+        except Exception as ex:
+            logger.exception(ex)
+
+
+    def save_media_content(self, file_name, content: bytes):
+        try:
+            with open(file_name, "wb") as f:
+                f.write(content)
+        except Exception as ex:
+            logger.exception(ex)
+        return file_name
+    
+    
+    def save_record(self, file_name:str, url: str, md5: str):
+        if file_name != None and md5 != None and url != None:
+            self.data_manager.insert_data(Media(media_url = url, storage_path = file_name, content_md5 = md5))
     
     
 if __name__ == "__main__":

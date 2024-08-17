@@ -69,6 +69,11 @@ def initialLogger(
         encoding="utf8",
     )
     handler2 = logging.StreamHandler()
+    handler3 = logging.FileHandler(
+        os.path.join(logs_dir, "all." + str(datetime.date.today()) + ".log"),
+        "a",
+        encoding="utf8",
+    )
     formatter1 = logging.Formatter(
         fmt="%(asctime)s [%(levelname)s] [%(filename)s] [%(lineno)d] [%(funcName)s] >> %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -76,11 +81,14 @@ def initialLogger(
     formatter2 = logging.Formatter(fmt="[%(levelname)s] >> %(message)s")
     handler1.setFormatter(formatter1)
     handler2.setFormatter(formatter2)
+    handler3.setFormatter(formatter2)
     file_level = eval(file_level) if type(file_level) == str else file_level
     stream_level = eval(stream_level) if type(stream_level) == str else stream_level
     logger_level = eval(logger_level) if type(logger_level) == str else logger_level
     handler1.setLevel(file_level)
     handler2.setLevel(stream_level)
+    handler3.setLevel(stream_level)
     logger.setLevel(logger_level)
     logger.addHandler(handler1)
     logger.addHandler(handler2)
+    logger.addHandler(handler3)

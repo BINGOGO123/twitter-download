@@ -176,11 +176,15 @@ def get_content_info_from_content(content: dict) -> dict:
     # 如果有items（twitter下面附带的回复信息）
     items = content.get("items", [])
     if isinstance(items, list) and len(items) > 0:
-        for item in items:
-            content_info["result_list"].append(get_result_info_from_content(item.get("item")))
+        # 最后一个是本体，前面是回复信息，当下载一个用户所有推文时，自己评论自己的会显示在原推文下面，这种的处理下来就重复了
+        # 如果下载指定推文，除了第一个是推文本身外（非这种items结构），下面所有的回复也都是这个结构，但是由于不会显示对回复的回复，所以这时候只会有一个item
+        content_info["result_list"].append(get_result_info_from_content(items[-1].get("item")))
+        # for item in items:
+        #     content_info["result_list"].append(get_result_info_from_content(item.get("item")))
     else:
         content_info["result_list"].append(get_result_info_from_content(content))
     return content_info
+
 
 def get_result_info_from_content(content: dict) -> dict:
     """从content中获取resutl信息

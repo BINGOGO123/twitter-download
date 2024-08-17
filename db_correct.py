@@ -7,6 +7,7 @@ from data_manager.media import Media
 from database.abstract_db import AbstractDb
 import sys
 from tool.decorators import LoggerWrapper
+from tqdm import tqdm
 
 
 # 获取配置和 logger
@@ -45,18 +46,18 @@ def db_checker(md5_check, db_correct_remove_invalid):
     manager = ResourceDataManager(AbstractDb.get_default_database())
     media_list = manager.get_all_data()
     invalid_media_list = []
-    for media in media_list:
-        if not is_valid_media(media, md5_check):
-            invalid_media_list.append(media)
-            logger.info(media)
-            if (db_correct_remove_invalid):
-                manager.delete_data_info_by_storage_path(media.get_storage_path())
-    
-    logger.info("Total {} invalid media info".format(len(invalid_media_list)))
+    with tqdm(total=len(media_list), desc="Check media progress", colour="green") as pbar:
+        for media in media_list:
+            if not is_valid_media(media, md5_check):
+                invalid_media_list.append(media)
+                logger.debug(media)
+                if (db_correct_remove_invalid):
+                    manager.delete_data_info_by_storage_path(media.get_storage_path())
+            pbar.update(1)
 
 
 if __name__ == "__main__":
-    md5_check = module_config.get("module_config", False)
+    md5_check = module_config.get("md5_check", False)
     db_correct_remove_invalid = module_config.get("db_correct_remove_invalid", False)
     if len(sys.argv) > 1:
         if sys.argv[1].lower() == "t" or sys.argv[1].lower() == "true":
@@ -64,7 +65,8 @@ if __name__ == "__main__":
         elif sys.argv[1].lower() == "f" or sys.argv[1].lower() == "false":
             db_correct_remove_invalid = False
         else:
-            logger.error("Invalid argv [{}]. Supported values: T, F.".format(sys.argv[1]))
+            logger.critical("Invalid argv [{}]. Supported values: T, F.".format(sys.argv[1]))
             exit(-1)
-
+            
+    logger.info("md5_check: {}, db_correct_remove_invalid: {}".format(str(md5_check), str(db_correct_remove_invalid)))
     db_checker(md5_check, db_correct_remove_invalid)

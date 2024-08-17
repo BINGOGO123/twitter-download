@@ -23,7 +23,7 @@ class TwitterInfoPage(AbstractSinglePage):
 
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
-        logger.error("Please input twitter id")
+        logger.critical("Please input twitter id")
         exit(-1)
     twitter_id = sys.argv[1]
     downloader = TwitterInfoPage(CommonDownloader())
