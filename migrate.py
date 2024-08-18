@@ -5,6 +5,7 @@ import logging
 from configs import get_module_config
 from tqdm import tqdm
 from data_manager.data_manager import DataManager
+import argparse
 
 # 获取配置和 logger
 module_config: dict
@@ -20,7 +21,7 @@ def migrate_data(data_manager: DataManager, insert_set: set, from_name: str, to_
     logger.debug("migrate {} data from {} to {}".format(insert_set, from_name, to_name))
 
 
-if __name__ == "__main__":
+def migrate():
     sqlite_db_name = module_config.get("sqlite_db_name")
     sqlite_manager = ResourceDataManager(sqlite.Db(sqlite_db_name = sqlite_db_name) if sqlite_db_name != None else sqlite.Db())
     
@@ -35,3 +36,18 @@ if __name__ == "__main__":
     
     migrate_data(sqlite_manager, mysql_insert_set, "Mysql", "Sqlite")
     migrate_data(mysql_manager, sqlite_insert_set, "Sqlite", "Mysql")
+    
+    
+def get_args():
+    # 创建 ArgumentParser 对象
+    parser = argparse.ArgumentParser(description="Migrate the media records between sqlite and mysql.")
+
+    # 解析命令行参数
+    args = parser.parse_args()
+    
+    return None
+
+
+if __name__ == "__main__":
+    get_args()
+    migrate()

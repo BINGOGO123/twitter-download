@@ -10,6 +10,7 @@ import logging
 from page.favorite import FavoriteTweetPage
 from page.twitter import TwitterInfoPage
 import os
+from gallary.single_page_gallary import SinglePageGallary
 
 
 # 获取配置和 logger
@@ -38,8 +39,11 @@ def download_tweeted_by_user_id(user_id: str, target_dir: str, limited_count):
     downloader = CommonDownloader()
     page = TweetedTweetPage(downloader)
     twitter_info_list = page.get_info(user_id, limited_count)
-    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = os.path.join(target_dir, user_id))
-    saver.save_all(twitter_info_list)
+    target_dir = os.path.join(target_dir, user_id)
+    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
+    result = saver.save_all(twitter_info_list)
+    gallary = SinglePageGallary()
+    gallary.generate(result, target_dir, f"Tweeted[User ID: {user_id}]")
         
 
 # 通过screen-name下载用户收藏的所有推文  
@@ -53,8 +57,11 @@ def download_favorite_by_user_id(user_id: str, target_dir: str, limited_count):
     downloader = CommonDownloader()
     page = FavoriteTweetPage(downloader)
     twitter_info_list = page.get_info(user_id, limited_count)
-    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = os.path.join(target_dir, user_id))
-    saver.save_all(twitter_info_list)
+    target_dir = os.path.join(target_dir, user_id)
+    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
+    result = saver.save_all(twitter_info_list)
+    gallary = SinglePageGallary()
+    gallary.generate(result, target_dir, f"Favorite[User ID: {user_id}]")
 
 
 # 通过twitter-id下载推文信息
@@ -63,12 +70,14 @@ def download_by_twitter_id(twitter_id: str, target_dir: str):
     page = TwitterInfoPage(downloader)
     twitter_info_list = page.get_info(twitter_id)
     saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = os.path.join(target_dir, twitter_id))
-    saver.save_all(twitter_info_list)
+    result = saver.save_all(twitter_info_list)
+    gallary = SinglePageGallary()
+    gallary.generate(result, target_dir, f"Twitter[Twitter ID: {twitter_id}]")
 
 
 def get_args():
     # 创建 ArgumentParser 对象
-    parser = argparse.ArgumentParser(description="Example script to parse command line arguments.")
+    parser = argparse.ArgumentParser(description="Download twittter infos with the following arguments.")
     parser.add_argument("-s", "--screen-name", type=str, help="the screen name of the user, this is a unique name with a prefix '@' which is displayed at the user's homepage, and your input should not include the symbol '@'")
     parser.add_argument("-u", "--user-id", type=str, help="the rest id of the user")
     parser.add_argument("-r", "--twitter-id", type=str, help="the rest id of the twitter you wanted to download")

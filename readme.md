@@ -131,7 +131,7 @@ A simple twitter download tool. Functions as follows:
 15. Generate markdown gallary
 
     ```shell
-    python gallary.py {source_path}
+    python gallary.py -s {source_path}
     ```
 
 16. Check database

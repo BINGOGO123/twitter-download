@@ -88,17 +88,16 @@ class EfficientTwitterSaver(TwitterSaver):
     
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
-        logger.error("Please input the path of save pointer")
+        logger.error("Please input the path of saving entry")
         exit(-1)
     filename = sys.argv[1]
     f = open(filename, "rb")
     try:
-        pointer_list = json.loads(f.read().decode("utf8"))
+        entry_list = json.loads(f.read().decode("utf8"))
     finally:
         f.close()
     saver = EfficientTwitterSaver(CommonDownloader(), ResourceDataManager(AbstractDb.get_default_database()))
-    if isinstance(pointer_list, list):
-        for pointer in pointer_list:
-            saver.save(pointer)
+    if isinstance(entry_list, list):
+        saver.save_all(entry_list)
     else:
-        saver.save(pointer_list)
+        saver.save(entry_list)

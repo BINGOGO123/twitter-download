@@ -154,6 +154,8 @@ def get_entry_info_from_entry(entry: dict) -> dict:
     # 以who-to-follow为开头的entry是推荐关注用户，这里排掉
     if entry.get("entryId", "").startswith("who-to-follow"):
         return None
+    entry_info["sort_index"] = entry.get("sortIndex")
+    entry_info["entry_id"] = entry.get("entryId")
     content = entry.get("content", {})
     entry_info["content_info"] = get_content_info_from_content(content)
     return entry_info
@@ -171,18 +173,18 @@ def get_content_info_from_content(content: dict) -> dict:
     content_info = {}
     content_info["cursor"] = content.get("value")
     content_info["cursor_type"] = content.get("cursorType")
-    content_info["result_list"] = []
     
     # 如果有items（twitter下面附带的回复信息）
     items = content.get("items", [])
     if isinstance(items, list) and len(items) > 0:
         # 最后一个是本体，前面是回复信息，当下载一个用户所有推文时，自己评论自己的会显示在原推文下面，这种的处理下来就重复了
         # 如果下载指定推文，除了第一个是推文本身外（非这种items结构），下面所有的回复也都是这个结构，但是由于不会显示对回复的回复，所以这时候只会有一个item
-        content_info["result_list"].append(get_result_info_from_content(items[-1].get("item")))
+        content_info["result"] = get_result_info_from_content(items[-1].get("item"))
+        # content_info["result_list"] = []
         # for item in items:
         #     content_info["result_list"].append(get_result_info_from_content(item.get("item")))
     else:
-        content_info["result_list"].append(get_result_info_from_content(content))
+        content_info["result"] = get_result_info_from_content(content)
     return content_info
 
 

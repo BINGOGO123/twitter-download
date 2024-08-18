@@ -30,7 +30,7 @@ class AbstractTweetPage(AbstractPage):
             next_url = self.get_base_url(rest_id)
             all_entry_info = []
             counter = 1
-            estimate_count = self.page_count * 3
+            estimate_count = limited_count if limited_count != 999999999 else self.page_count * 3
             with tqdm(total=estimate_count, desc="Page download progress", dynamic_ncols=True, colour="magenta") as pbar:
                 while next_url != None:
                     logger.debug("Round :{}".format(counter))
@@ -40,9 +40,10 @@ class AbstractTweetPage(AbstractPage):
                     next_url = self.get_next_url(rest_id, response_info)
                     current_entry_info = self.get_valid_response_info(response_info)
                     all_entry_info += current_entry_info
+                    if pbar.n + len(current_entry_info) >= pbar.total:
+                        pbar.total = int(pbar.n + len(current_entry_info) + estimate_count * 0.5)
                     pbar.update(len(current_entry_info))
-                    if pbar.n >= pbar.total:
-                        pbar.total += estimate_count * 0.5
+
                     # 打印本页所有信息数量
                     logger.debug("The count of current round is {}, all count is {}".format(len(current_entry_info), len(all_entry_info)))
                     # 如果本页没有了，则终止

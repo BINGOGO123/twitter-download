@@ -9,20 +9,7 @@ import json
 from downloader.downloader import Downloader
 from downloader.common_downloader import CommonDownloader
 from tqdm import tqdm
-
-# 定义颜色代码
-colors = {
-    'red': '\033[91m',
-    'green': '\033[92m',
-    'blue': '\033[94m',
-    'yellow': '\033[93m',
-    'reset': '\033[0m',
-    'pink': '\033[95m',
-    'brown': '\033[33m\033[2m',
-    'purple': '\033[95m',
-    'orange': '\033[33m',
-    'cyan': '\033[36m'
-}
+from configs.constants import COLORS
 
 
 class TwitterSaver(Saver):
@@ -33,60 +20,53 @@ class TwitterSaver(Saver):
         """
         self.downloader: Downloader = downloader
         self.target_dir = kwargs.get("target_dir", module_config.get("target_dir"))
-        
+
     
     @LoggerWrapper(logger)
-    def save_all(self, pointer_list: list[dict], target_dir = None) -> list[str]:
+    def save_all(self, entry_list: list[dict], target_dir = None) -> list[str]:
         ret = []
-        size = len(pointer_list)
-        with tqdm(total=size, desc="Twitter download Progress", colour="green", dynamic_ncols=True) as pbar:
-            for i in range(len(pointer_list)):
-                pointer = pointer_list[i]
-                logger.debug("Twitter saving progress [{}/{}]".format(i + 1, size))
-                ret += self.save(pointer, target_dir)
+        size = len(entry_list)
+        with tqdm(total=size, desc="Entry download Progress", colour="green", dynamic_ncols=True) as pbar:
+            for i in range(len(entry_list)):
+                entry = entry_list[i]
+                logger.debug("Entry download progress [{}/{}]".format(i + 1, size))
+                ret.append(self.save(entry, target_dir))
                 pbar.update(1)
         return ret
 
 
     @LoggerWrapper(logger, True)
-    def save(self, pointer: dict, target_dir = None) -> list[str]:
+    def save(self, entry: dict, target_dir = None) -> str:
         target_dir = self.target_dir if target_dir is None else target_dir
-        result_target_dir_list = []
         try:
-            result_list = self.get_result_list(pointer)
-            total_count = len(result_list)
-            with tqdm(total=total_count, desc="Result download Progress ", colour="blue", leave=False, dynamic_ncols=True) as pbar:
-                for i in range(total_count):
-                    logger.debug("Result saving progress [{}/{}]".format(i + 1, total_count))
-                    result = result_list[i]
-                    result_target_dir = self.save_result(result, target_dir)
-                    pbar.write(f"{colors['blue']}Result saved  at: {result_target_dir}{colors['reset']}")
-                    result_target_dir_list.append(result_target_dir)
-                    pbar.update(1)
+            entry_id = entry.get("entry_id")
+            if entry_id == None or entry_id == "":
+                logger.error("entry id is empty")
+                return
+            entry_target_dir = os.path.abspath(os.path.join(target_dir, entry_id))
+            self.create_dir(entry_target_dir)
+            result = self.get_result(entry)
+            self.save_json(entry, entry_target_dir)
+            self.save_result(result, entry_target_dir)
+            logger.debug(f"Entry saved at: {entry_target_dir}")
+            tqdm.write(f"{COLORS['green']}Entry saved at: {entry_target_dir}{COLORS['reset']}")
+            return entry_target_dir
         except Exception as ex:
             logger.exception(ex)
-        return result_target_dir_list
     
     
     def save_result(self, result: dict, target_dir: str) -> str:
-        rest_id = result.get("rest_id")
-        if rest_id == None or rest_id == "":
-            logger.error("rest id is empty")
-            return
-        result_target_dir = os.path.abspath(os.path.join(target_dir, rest_id))
-        self.create_dir(result_target_dir)
-        self.save_result_json(result, result_target_dir)
         medias = self.get_medias(result)
-        self.save_medias(medias, result_target_dir)
-        return result_target_dir
+        self.save_medias(medias, target_dir)
+        return target_dir
 
 
     def get_medias(self, result: dict) -> list:
         return result.get("twitter_info", {}).get("medias", [])
 
 
-    def get_result_list(self, pointer: dict) -> list:
-        return pointer.get("content_info", {}).get("result_list", [])
+    def get_result(self, entry: dict) -> dict:
+        return entry.get("content_info", {}).get("result", {})
 
 
     def create_dir(self, target_dir: str):
@@ -96,12 +76,10 @@ class TwitterSaver(Saver):
             
     def save_medias(self, medias: list, target_dir: str):
         total_count = len(medias)
-        with tqdm(total=total_count, desc="Media download Progress  ", colour="cyan", leave=False, dynamic_ncols=True) as pbar:
+        with tqdm(total=total_count, desc="Media  Progress  ", colour="cyan", leave=False, dynamic_ncols=True) as pbar:
             for index in range(len(medias)):
-                logger.debug("Media saving progress [{}/{}]".format(index + 1, total_count))
-                file_name = self.save_media_info(medias[index], target_dir, index + 1)
-                logger.debug("Media saved at: {}".format(file_name))
-                pbar.write(f"{colors['cyan']}Media saved at: {file_name}{colors['reset']}")
+                logger.debug("Media download progress [{}/{}]".format(index + 1, total_count))
+                self.save_media_info(medias[index], target_dir, index + 1)
                 pbar.update(1)
 
 
@@ -115,7 +93,10 @@ class TwitterSaver(Saver):
             if os.path.isfile(file_name):
                 logger.debug("{} has existed".format(file_name))
                 return
-            return self.save_file(file_name, url)
+            file_name = self.save_file(file_name, url)
+            logger.debug("Media saved at: {}".format(file_name))
+            tqdm.write(f"{COLORS['cyan']}Media saved at: {file_name}{COLORS['reset']}")
+            return file_name
         except Exception as ex:
             logger.exception(ex)
 
@@ -141,11 +122,11 @@ class TwitterSaver(Saver):
         return file_name
         
 
-    def save_result_json(self, result: dict, result_target_dir: str) -> str:
+    def save_json(self, json_data: dict, target_dir: str) -> str:
         try:
-            file_name = os.path.join(result_target_dir, "result.json")
+            file_name = os.path.join(target_dir, "entry.json")
             with open(file_name, "w", encoding = "utf8") as f:
-                f.write(get_formatted_json_str(result))
+                f.write(get_formatted_json_str(json_data))
                 f.close()
             return os.path.abspath(file_name)
         except Exception as ex:
@@ -154,17 +135,16 @@ class TwitterSaver(Saver):
     
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
-        logger.critical("Please input the path of save pointer")
+        logger.critical("Please input the path of saving entry")
         exit(-1)
     file_name = sys.argv[1]
     f = open(file_name, "rb")
     try:
-        pointer_list = json.loads(f.read().decode("utf8"))
+        entry_list = json.loads(f.read().decode("utf8"))
     finally:
         f.close()
     saver = TwitterSaver(CommonDownloader())
-    if isinstance(pointer_list, list):
-        for pointer in pointer_list:
-            saver.save(pointer)
+    if isinstance(entry_list, list):
+        saver.save_all(entry_list)
     else:
-        saver.save(pointer_list)
+        saver.save(entry_list)

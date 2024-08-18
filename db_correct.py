@@ -8,6 +8,7 @@ from database.abstract_db import AbstractDb
 import sys
 from tool.decorators import LoggerWrapper
 from tqdm import tqdm
+import argparse
 
 
 # 获取配置和 logger
@@ -17,7 +18,7 @@ module_config, logger = get_module_config(__name__)
 
 
 def get_md5_from_file(file_name: str) -> str:
-    f = open(file_name, "wb")
+    f = open(file_name, "rb")
     try:
         data = f.read()
     finally:
@@ -30,7 +31,7 @@ def is_valid_data(md5_check, storage_path, media_url, content_md5):
         media_url is not None
         and storage_path is not None
         and os.path.isfile(storage_path)
-        and (not md5_check or content_md5 == generate_md5_hash(storage_path))
+        and (not md5_check or content_md5 == get_md5_from_file(storage_path))
     )
 
 
@@ -54,19 +55,27 @@ def db_checker(md5_check, db_correct_remove_invalid):
                 if (db_correct_remove_invalid):
                     manager.delete_data_info_by_storage_path(media.get_storage_path())
             pbar.update(1)
+    logger.info("Total [{}] invalid media".format(len(invalid_media_list)))
+    
+    
+def get_args():
+    # 创建 ArgumentParser 对象
+    parser = argparse.ArgumentParser(description="Check the correctness of the default database.")
+    parser.add_argument("-m", "--md5-check", type=bool, help="check the md5 of the file and of the value storaged in database")
+    parser.add_argument("-r", "--remove_invalid", type=bool, help="remove the invalid database record while checking the database")
+
+    # 解析命令行参数
+    args = parser.parse_args()
+    
+    # 获取对应的参数
+    md5_check = args.md5_check if args.md5_check != None else module_config.get("md5_check")
+    db_correct_remove_invalid = args.remove_invalid if args.remove_invalid != None else module_config.get("db_correct_remove_invalid")
+    
+    return md5_check, db_correct_remove_invalid
 
 
 if __name__ == "__main__":
-    md5_check = module_config.get("md5_check", False)
-    db_correct_remove_invalid = module_config.get("db_correct_remove_invalid", False)
-    if len(sys.argv) > 1:
-        if sys.argv[1].lower() == "t" or sys.argv[1].lower() == "true":
-            db_correct_remove_invalid = True
-        elif sys.argv[1].lower() == "f" or sys.argv[1].lower() == "false":
-            db_correct_remove_invalid = False
-        else:
-            logger.critical("Invalid argv [{}]. Supported values: T, F.".format(sys.argv[1]))
-            exit(-1)
-            
+    md5_check, db_correct_remove_invalid = get_args()
     logger.info("md5_check: {}, db_correct_remove_invalid: {}".format(str(md5_check), str(db_correct_remove_invalid)))
+    
     db_checker(md5_check, db_correct_remove_invalid)
