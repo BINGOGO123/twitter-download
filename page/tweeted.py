@@ -1,11 +1,10 @@
 from . import logger
-from .parse import *
 import sys
 from tool.tool import get_formatted_json_str
 from .tweet_page import AbstractTweetPage
 from . import module_config
-from downloader.downloader import Downloader
 from downloader.common_downloader import CommonDownloader
+from parser.tweeted_parser import TweetedParser
 
 class TweetedTweetPage(AbstractTweetPage):
     def get_url_prefix_suffix(self, rest_id: str) -> tuple:
@@ -14,16 +13,11 @@ class TweetedTweetPage(AbstractTweetPage):
         return (url_prefix, url_suffix)
 
 
-    def parse_response_info(self, data: dict) -> dict:
-        entries = get_entries_from_tweeted_response(data)
-        return get_entry_info_list_from_entries(entries)
-
-
 if __name__ == "__main__":
     if (len(sys.argv) < 2):
         logger.critical("Please input rest id of the user")
         exit(-1)
     rest_id = sys.argv[1]
-    tweet = TweetedTweetPage(CommonDownloader())
+    tweet = TweetedTweetPage(CommonDownloader(), TweetedParser())
     twitter_info = tweet.get_info(rest_id)
     print(get_formatted_json_str(twitter_info))

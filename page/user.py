@@ -1,10 +1,10 @@
 import sys
 from . import logger
 from tool.tool import get_formatted_json_str
-from .parse import get_user_info_from_user_response
 from .single_page import AbstractSinglePage
 from err.err import *
 from downloader.common_downloader import CommonDownloader
+from parser.user_parser import UserParser
 
 
 class UserInfoPage(AbstractSinglePage):
@@ -14,10 +14,6 @@ class UserInfoPage(AbstractSinglePage):
         if not isinstance(args[0], str):
             raise ArgsException("The first arg must be str")
         return 'https://x.com/i/api/graphql/-0XdHI-mrHWBQd8-oLo1aA/ProfileSpotlightsQuery?variables={"screen_name":"' + args[0] + '"}'
-    
-    
-    def parse_response_info(self, data: dict) -> dict:
-        return get_user_info_from_user_response(data)
 
 
 if __name__ == "__main__":
@@ -25,6 +21,6 @@ if __name__ == "__main__":
         logger.critical("Please input screen_name of the user")
         exit(-1)
     screen_name = sys.argv[1]
-    downloader = UserInfoPage(CommonDownloader())
+    downloader = UserInfoPage(CommonDownloader(), UserParser())
     user_info = downloader.get_info(screen_name)
     print(get_formatted_json_str(user_info))

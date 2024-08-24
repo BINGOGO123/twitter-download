@@ -14,6 +14,11 @@ default_config = {
     },
     "database": {
         "db_connect_params": {
+            "host": "localhost",
+            "port": 3306,
+            "user": "",
+            "password": "",
+            "database": "",
             "creator": pymysql,  # 使用链接数据库的模块
             "maxconnections": 6,  # 连接池允许的最大连接数，0和None表示不限制连接数
             "mincached": 2,  # 初始化时，链接池中至少创建的空闲的链接，0表示不创建
@@ -54,10 +59,16 @@ default_config = {
             "timeout": 5,
         },
     },
+    "gallary": {
+        # 生成gallary之后执行的命令
+        # "gallary_open_with": "typora {} &"
+    },
     "__main__": {
         "twitter_download_dir": "./download_info/twitter/",
         "tweeted_download_dir": "./download_info/tweeted/",
         "favorite_download_dir": "./download_info/favorite/",
+        "media_download_dir": "./download_info/media/",
+        "reply_download_dir": "./download_info/reply/",
         "gallary_dir": "./download_info/gallary/",
         "download_type": "tweeted",
         "limited_count": 999999999,

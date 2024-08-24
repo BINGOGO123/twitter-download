@@ -44,97 +44,121 @@ A simple twitter download tool. Functions as follows:
 
 ## Usage
 
-1. Download specified twitter
+* Download specified twitter
 
     ```shell
     python download.py -r {twitter_id}
     ```
 
-2. Download tweeted info of the user by screen name
+* Download tweeted info of the user by screen name
 
     ```shell
     python download.py -s {screen_name} -t tweeted
     ```
 
-3. Download favorite info of the user by screen name
+* Download favorite info of the user by screen name
 
     ```shell
     python download.py -s {screen_name} -t favorite
     ```
 
-4. Download tweeted info of the user by user id
+* Download reply info of the user by screen name
+
+    ```shell
+    python download.py -s {screen_name} -t reply
+    ```
+
+* Download media info of the user by screen name
+
+    ```shell
+    python download.py -s {screen_name} -t media
+    ```
+
+* Download tweeted info of the user by user id
 
     ```shell
     python download.py -u {user_id} -t tweeted
     ```
 
-5. Download favorite info of the user by user id
+* Download favorite info of the user by user id
 
     ```shell
     python download.py -u {user_id} -t favorite
     ```
 
-6. Download specified twitter to specified dir
+* Download reply info of the user by user id
+
+    ```shell
+    python download.py -u {user_id} -t reply
+    ```
+
+* Download media info of the user by user id
+
+    ```shell
+    python download.py -u {user_id} -t media
+    ```
+
+* Download specified twitter to specified dir
 
     ```shell
     python download.py -r {twitter_id} -d {target_dir}
     ```
 
-7. Look up help info
+* Look up help info
 
     ```shell
     python download.py -h 
     ```
 
-8. Download all favorited twitter info (only json) of the user by user id
+* Download all favorited twitter info (only json) of the user by user id
 
     ```shell
     python -m page.favorite {user_id}
     ```
 
-9. Download all tweeted twitter info (only json) of the user by user id
+* Download all tweeted twitter info (only json) of the user by user id
 
     ```shell
     python -m page.tweeted {user_id}
     ```
 
-10. Download a twitter info (only json) by twitter id
+* Download a twitter info (only json) by twitter id
 
     ```shell
     python -m page.twitter {twitter_id}
     ```
 
-11. Download the user info (only json) by screen name
+* Download the user info (only json) by screen name
 
     ```shell
     python -m page.user {screen_name}
     ```
 
-12. Download specified info with json pointer which is generated with the 8-9 items above
+* Download specified info with json pointer which is generated with the 8-9 items above
 
     ```shell
     python -m persistance.twitter_saver {json_file_name}
     ```
 
-13. Efficiently download specified info with json pointer which is generated with the 8-9 items above. This method will not download file repeatedly.
+* Efficiently download specified info with json pointer which is generated with the 8-9 items above. This method will not download file repeatedly.
 
     ```shell
     python -m persistance.efficient_twitter_saver {json_file_name}
     ```
 
-14. Sync data from mysql to sqlite and from sqlite to mysql
+* Sync data from mysql to sqlite and from sqlite to mysql
 
     ```shell
     python migrate.py
     ```
 
-15. Generate markdown gallary
+* Generate markdown gallary
 
     ```shell
     python gallary.py -s {source_path}
     ```
 
-16. Check database
+* Check database
 
     ```shell
     python db_correct.py
@@ -198,6 +222,8 @@ You can refer the below format to modify `config.json` to configure advanced opt
         "twitter_download_dir": "./download_info/twitter/",
         "tweeted_download_dir": "./download_info/tweeted/",
         "favorite_download_dir": "./download_info/favorite/",
+        "media_download_dir": "./download_info/media/",
+        "reply_download_dir": "./download_info/reply/",
         "gallary_dir": "./download_info/gallary/",
         "download_type": "tweeted",
         "limited_count": 999999999,

@@ -69,7 +69,7 @@ class CommonGallary(Gallary):
             if sub_dir_name.endswith(".json") or sub_dir_name.endswith(".txt"):
                 continue
             if self.is_vedio(sub_dir_name):
-                md_file.write('<video id="video" controls="" src="{}" preload="none">\n\n'.format(os.path.abspath(os.path.join(dir_path, sub_dir_name))))
+                md_file.write('<video id="video" loop controls="" src="{}" preload="none">\n\n'.format(os.path.abspath(os.path.join(dir_path, sub_dir_name))))
             else:
                 md_file.write("![{}]({})\n\n".format(sub_dir_name, os.path.abspath(os.path.join(dir_path, sub_dir_name))))
 
@@ -96,11 +96,12 @@ class CommonGallary(Gallary):
             md_file.write(">\n")
         url = self.get_url(result_json)
         md_file.write("> [Twitter Link]({})\n\n".format(str(url)))
-                    
-        if full_text != None:
-            full_text.replace("\n", "<br/>")
-            md_file.write(full_text)
-            md_file.write("\n\n")
+
+        # full_text已经写在标题上了，这里先不写了                    
+        # if full_text != None:
+        #     full_text.replace("\n", "<br/>")
+        #     md_file.write(full_text)
+        #     md_file.write("\n\n")
 
 
     def get_url(self, result_json):

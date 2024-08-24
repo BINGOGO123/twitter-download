@@ -39,6 +39,19 @@ def get_entries_from_twitter_response(data: dict) -> list:
     return get_entries_from_instructions(instructions)
 
 
+def get_entries_from_media_response(data: dict) -> list:
+    """获取一条media response的所有entries
+
+    Args:
+        data (dict): media response
+
+    Returns:
+        list: 所有entries
+    """
+    instructions: list = data.get("data", {}).get("user", {}).get("result", {}).get("timeline_v2", {}).get("timeline", {}).get("instructions", [])
+    return get_entries_from_media_instructions(instructions)
+
+
 def get_entries_from_instructions(instructions: list) -> list:
     """从instructions中获取entries
 
@@ -54,6 +67,26 @@ def get_entries_from_instructions(instructions: list) -> list:
             continue
         entries = instruction.get("entries", [])
         all_entries += entries
+    return all_entries
+
+
+def get_entries_from_media_instructions(instructions: list) -> list:
+    """从instructions中获取entries
+
+    Args:
+        instructions (list): instructions
+
+    Returns:
+        list: entries
+    """
+    all_entries = []
+    for instruction in instructions:
+        if not isinstance(instruction, dict):
+            continue
+        entries = instruction.get("entries", [])
+        all_entries += entries
+        module_items = instruction.get("moduleItems", [])
+        all_entries += module_items
     return all_entries
 
 
@@ -156,7 +189,9 @@ def get_entry_info_from_entry(entry: dict) -> dict:
         return None
     entry_info["sort_index"] = entry.get("sortIndex")
     entry_info["entry_id"] = entry.get("entryId")
-    content = entry.get("content", {})
+    content = entry.get("content")
+    if content == None:
+        content = entry.get("item", {})
     entry_info["content_info"] = get_content_info_from_content(content)
     return entry_info
 

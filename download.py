@@ -11,6 +11,14 @@ from page.favorite import FavoriteTweetPage
 from page.twitter import TwitterInfoPage
 import os
 from gallary.single_page_gallary import SinglePageGallary
+from page.media import MediaPage
+from page.reply import ReplyPage
+from parser.favorite_parser import FavoriteParser
+from parser.tweeted_parser import TweetedParser
+from parser.twitter_parser import TwitterParser
+from parser.media_parser import MediaParser
+from parser.reply_parser import ReplyParser
+from parser.user_parser import UserParser
 
 
 # 获取配置和 logger
@@ -22,7 +30,7 @@ module_config, logger = get_module_config(__name__)
 # 通过user-id获取screen-name
 def get_user_id_by_screen_name(screen_name):
     downloader = CommonDownloader()
-    user_page = UserInfoPage(downloader)
+    user_page = UserInfoPage(downloader, UserParser())
     user_info = user_page.get_info(screen_name)
     rest_id = user_info.get("rest_id")
     return rest_id
@@ -37,7 +45,7 @@ def download_tweeted_by_screen_name(screen_name: str, target_dir: str, limited_c
 # 通过user-id下载用户转推的所有推文 
 def download_tweeted_by_user_id(user_id: str, target_dir: str, limited_count):
     downloader = CommonDownloader()
-    page = TweetedTweetPage(downloader)
+    page = TweetedTweetPage(downloader, TweetedParser())
     twitter_info_list = page.get_info(user_id, limited_count)
     target_dir = os.path.join(target_dir, user_id)
     saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
@@ -55,19 +63,55 @@ def download_favorite_by_screen_name(screen_name: str, target_dir: str, limited_
 # 通过user-id下载用户收藏的所有推文 
 def download_favorite_by_user_id(user_id: str, target_dir: str, limited_count):
     downloader = CommonDownloader()
-    page = FavoriteTweetPage(downloader)
+    page = FavoriteTweetPage(downloader, FavoriteParser())
     twitter_info_list = page.get_info(user_id, limited_count)
     target_dir = os.path.join(target_dir, user_id)
     saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
     result = saver.save_all(twitter_info_list)
     gallary = SinglePageGallary()
     gallary.generate(result, target_dir, f"Favorite[User ID: {user_id}]")
+    
+
+# 通过screen-name下载用户所有有媒体的推文和回复
+def download_media_by_screen_name(screen_name: str, target_dir: str, limited_count):
+    rest_id = get_user_id_by_screen_name(screen_name)
+    download_media_by_user_id(rest_id, target_dir, limited_count)
+
+       
+# 通过user-id下载用户所有有媒体的推文和回复
+def download_media_by_user_id(user_id: str, target_dir: str, limited_count):
+    downloader = CommonDownloader()
+    page = MediaPage(downloader, MediaParser())
+    twitter_info_list = page.get_info(user_id, limited_count)
+    target_dir = os.path.join(target_dir, user_id)
+    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
+    result = saver.save_all(twitter_info_list)
+    gallary = SinglePageGallary()
+    gallary.generate(result, target_dir, f"Media[User ID: {user_id}]")
+
+
+# 通过screen-name下载用户所有回复
+def download_reply_by_screen_name(screen_name: str, target_dir: str, limited_count):
+    rest_id = get_user_id_by_screen_name(screen_name)
+    download_reply_by_user_id(rest_id, target_dir, limited_count)
+
+       
+# 通过user-id下载用户所有回复 
+def download_reply_by_user_id(user_id: str, target_dir: str, limited_count):
+    downloader = CommonDownloader()
+    page = ReplyPage(downloader, ReplyParser())
+    twitter_info_list = page.get_info(user_id, limited_count)
+    target_dir = os.path.join(target_dir, user_id)
+    saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = target_dir)
+    result = saver.save_all(twitter_info_list)
+    gallary = SinglePageGallary()
+    gallary.generate(result, target_dir, f"Reply[User ID: {user_id}]")
 
 
 # 通过twitter-id下载推文信息
 def download_by_twitter_id(twitter_id: str, target_dir: str):
     downloader = CommonDownloader()
-    page = TwitterInfoPage(downloader)
+    page = TwitterInfoPage(downloader, TwitterParser())
     twitter_info_list = page.get_info(twitter_id)
     saver = EfficientTwitterSaver(downloader, ResourceDataManager(AbstractDb.get_default_database()), target_dir = os.path.join(target_dir, twitter_id))
     result = saver.save_all(twitter_info_list)
@@ -96,13 +140,15 @@ def get_args():
     twitter_download_dir = args.target_dir if args.target_dir != None else module_config.get("twitter_download_dir")
     tweeted_download_dir = args.target_dir if args.target_dir != None else module_config.get("tweeted_download_dir")
     favorite_download_dir = args.target_dir if args.target_dir != None else module_config.get("favorite_download_dir")
+    media_download_dir = args.target_dir if args.target_dir != None else module_config.get("media_download_dir")
+    reply_download_dir = args.target_dir if args.target_dir != None else module_config.get("reply_download_dir")
     limited_count = args.limited_count if args.limited_count != None else module_config.get("limited_count")
     
-    return screen_name, user_id, twitter_id, download_type, twitter_download_dir, tweeted_download_dir, favorite_download_dir, limited_count
+    return screen_name, user_id, twitter_id, download_type, twitter_download_dir, tweeted_download_dir, favorite_download_dir, media_download_dir, reply_download_dir, limited_count
 
 
 # 根据输出的参数执行不同的操作
-def execute(screen_name, user_id, twitter_id, download_type, twitter_download_dir, tweeted_download_dir, favorite_download_dir, limited_count):
+def execute(screen_name, user_id, twitter_id, download_type, twitter_download_dir, tweeted_download_dir, favorite_download_dir, media_download_dir, reply_download_dir, limited_count):
     if twitter_id != None:
         logger.info("Download twitter info with twitter id [{}]. Target dir is [{}].".format(twitter_id, twitter_download_dir))
         download_by_twitter_id(twitter_id, twitter_download_dir)
@@ -116,8 +162,14 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
         elif download_type.lower() == "favorite":
             logger.info("Download [{}] info with screen name [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, screen_name, favorite_download_dir, limited_count))
             download_favorite_by_screen_name(screen_name, favorite_download_dir, limited_count)
+        elif download_type.lower() == "media":
+            logger.info("Download [{}] info with screen name [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, screen_name, media_download_dir, limited_count))
+            download_media_by_screen_name(screen_name, media_download_dir, limited_count)
+        elif download_type.lower() == "reply":
+            logger.info("Download [{}] info with screen name [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, screen_name, reply_download_dir, limited_count))
+            download_reply_by_screen_name(screen_name, reply_download_dir, limited_count)
         else:
-            logger.critical("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
+            logger.critical("Invalid type of [{}], supported values: favorite, tweeted, media, reply.".format(download_type))
             exit(-1)
     elif user_id != None:
         if download_type.lower() == "tweeted":
@@ -126,8 +178,14 @@ def execute(screen_name, user_id, twitter_id, download_type, twitter_download_di
         elif download_type.lower() == "favorite":
             logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, favorite_download_dir, limited_count))
             download_favorite_by_user_id(user_id, favorite_download_dir, limited_count)
+        elif download_type.lower() == "media":
+            logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, media_download_dir, limited_count))
+            download_media_by_user_id(user_id, media_download_dir, limited_count)
+        elif download_type.lower() == "reply":
+            logger.info("Download [{}] info with user id [{}]. Target dir is [{}]. Limited count is [{}].".format(download_type, user_id, reply_download_dir, limited_count))
+            download_reply_by_user_id(user_id, reply_download_dir, limited_count)
         else:
-            logger.critical("Invalid type of [{}], supported values: favorite, tweeted.".format(download_type))
+            logger.critical("Invalid type of [{}], supported values: favorite, tweeted, media, reply.".format(download_type))
             exit(-1)
     else:
         logger.critical("At least one args of --twitter-id, --screen-name, --user-id are required.")

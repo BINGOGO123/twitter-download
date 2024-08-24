@@ -5,14 +5,15 @@ from .common_page import AbstractPage
 from tqdm import tqdm
 from . import module_config
 from downloader.downloader import Downloader
+from parser.parser import Parser
 
 class AbstractTweetPage(AbstractPage): 
-    def __init__(self, downloader: Downloader, **kwargs):
+    def __init__(self, downloader: Downloader, parser: Parser, **kwargs):
         """初始化
         Optional Args:
             page_count(int): 每次请求的twitter数量
         """
-        super().__init__(downloader, **kwargs)
+        super().__init__(downloader, parser, **kwargs)
         self.page_count = kwargs.get("page_count", module_config.get("page_count"))
         
         
@@ -36,7 +37,7 @@ class AbstractTweetPage(AbstractPage):
                     logger.debug("Round :{}".format(counter))
                     counter += 1
                     response_json = self.downloader.get_tw_response_json_by_url(next_url)
-                    response_info = self.parse_response_info(response_json)
+                    response_info = self.parser.parse(response_json)
                     next_url = self.get_next_url(rest_id, response_info)
                     current_entry_info = self.get_valid_response_info(response_info)
                     all_entry_info += current_entry_info
@@ -102,23 +103,9 @@ class AbstractTweetPage(AbstractPage):
             tuple: (url前缀, url后缀)
         """
         pass
-    
-
-    @abstractmethod
-    def parse_response_info(self, data: dict) -> dict:
-        """解析response
-
-        Args:
-            data (dict): response
-
-        Returns:
-            dict: 解析后的结果
-        """
-        pass
-    
 
 
-    def get_valid_response_info(self, response_info: dict) -> dict:
+    def get_valid_response_info(self, response_info: list) -> list:
         """获取有效的信息
 
         Args:

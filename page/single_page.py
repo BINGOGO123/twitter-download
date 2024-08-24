@@ -12,13 +12,13 @@ class AbstractSinglePage(AbstractPage):
             # 通过url获取json内容
             data = self.downloader.get_tw_response_json_by_url(url)
             # 解析json内容
-            result = self.parse_response_info(data)
+            result = self.parser.parse(data)
             return result
         except Exception as ex:
             logger.exception(ex)
             return {}
 
-        
+
     @abstractmethod
     def get_url(self, *args) -> str:
         pass

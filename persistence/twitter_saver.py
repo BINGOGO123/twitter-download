@@ -76,7 +76,7 @@ class TwitterSaver(Saver):
             
     def save_medias(self, medias: list, target_dir: str):
         total_count = len(medias)
-        with tqdm(total=total_count, desc="Media  Progress  ", colour="cyan", leave=False, dynamic_ncols=True) as pbar:
+        with tqdm(total=total_count, desc="Media download Progress  ", colour="cyan", leave=False, dynamic_ncols=True) as pbar:
             for index in range(len(medias)):
                 logger.debug("Media download progress [{}/{}]".format(index + 1, total_count))
                 self.save_media_info(medias[index], target_dir, index + 1)
